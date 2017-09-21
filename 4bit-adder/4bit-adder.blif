@@ -1,0 +1,39 @@
+# 4bit-adder written by Hao Chen (2017/9/20)
+.model 4bit-adder
+
+.inputs a0 a1 a2 a3 b0 b1 b2 b3
+
+.outputs s0 s1 s2 s3 s4
+
+.names a0 b0 s0
+10 1
+01 1
+.names a0 b0 c0
+11 1
+.names c0 a1 b1 s1
+010 1
+100 1
+001 1
+111 1
+.names c0 a1 b1 c1
+11- 1
+-11 1
+1-1 1
+.names c1 a2 b2 s2
+010 1
+100 1
+001 1
+111 1
+.names c1 a2 b2 c2
+11- 1
+-11 1
+1-1 1
+.names c2 a3 b3 s3
+010 1
+100 1
+001 1
+111 1
+.names c2 a3 b3 s4
+11- 1
+-11 1
+1-1 1
