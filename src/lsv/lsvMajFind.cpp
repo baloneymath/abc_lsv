@@ -120,7 +120,7 @@ void Lsv_NtkMajFind(Abc_Ntk_t * pNtk) {
   Abc_NtkForEachPo(pNtk, pObj, i) {
     if (Lsv_isMajGate(pObj)) ++totalMaj;
   }
-  fprintf(stderr, "\nTotal MAJ-3 num: %d\n", totalMaj);
+  fprintf(stderr, "# Total MAJ-3 num: %d\n", totalMaj);
 }
 
 ////////////////////////////////////////////////////////////////////////
