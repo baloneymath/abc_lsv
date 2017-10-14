@@ -1,3 +1,5 @@
 *.o
 *.d
 .vscode/
+abc
+arch_flags
