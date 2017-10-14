@@ -76,43 +76,40 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
     g5 = Abc_ObjFanin0(fanin0);
     g6 = fanin0;
     if (Abc_ObjFaninC0(fanin0) == 1) {
-      a = Abc_ObjFaninC1(g6)? Abc_ObjFaninId1(g6) : -Abc_ObjFaninId1(g6);
+      a = Abc_ObjFaninC1(g6)? -Abc_ObjFaninId1(g6) : Abc_ObjFaninId1(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
-      fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), a, b, c);
     }
   }
   else if ( Lsv_isCompGate(Abc_ObjFanin1(fanin0), fanin1) ) {
     g5 = Abc_ObjFanin1(fanin0);
     g6 = fanin0;
     if (Abc_ObjFaninC1(fanin0) == 1) {
-      a = Abc_ObjFaninC1(g6)? Abc_ObjFaninId1(g6) : -Abc_ObjFaninId1(g6);
+      a = Abc_ObjFaninC0(g6)? -Abc_ObjFaninId0(g6) : Abc_ObjFaninId0(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
-      fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), a, b, c);
     }
   }
   else if ( Lsv_isCompGate(Abc_ObjFanin0(fanin1), fanin0) ) {
     g5 = Abc_ObjFanin0(fanin1);
     g6 = fanin1;
     if (Abc_ObjFaninC0(fanin1) == 1) {
-      a = Abc_ObjFaninC1(g6)? Abc_ObjFaninId1(g6) : -Abc_ObjFaninId1(g6);
+      a = Abc_ObjFaninC1(g6)? -Abc_ObjFaninId1(g6) : Abc_ObjFaninId1(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
-      fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), a, b, c);
     }
   }
   else if ( Lsv_isCompGate(Abc_ObjFanin1(fanin1), fanin0) ) {
     g5 = Abc_ObjFanin1(fanin1);
     g6 = fanin1;
     if (Abc_ObjFaninC1(fanin1) == 1) {
-      a = Abc_ObjFaninC1(g6)? Abc_ObjFaninId1(g6) : -Abc_ObjFaninId1(g6);
+      a = Abc_ObjFaninC0(g6)? -Abc_ObjFaninId0(g6) : Abc_ObjFaninId0(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
-      fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), a, b, c);
     }
   }
   else return false;
+  fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), a, b, c);
   return true;
 }
 
