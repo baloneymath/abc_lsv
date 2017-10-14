@@ -8,11 +8,11 @@
 
   Synopsis    [procedure for finding MAJ gates.]
 
-  Author      [Nian-Ze Lee]
+  Author      [Hao Chen]
   
   Affiliation [NTU]
 
-  Date        [17, Sep., 2017.]
+  Date        [14, Oct., 2017.]
 
 ***********************************************************************/
 
