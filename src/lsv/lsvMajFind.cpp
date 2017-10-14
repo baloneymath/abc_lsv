@@ -51,21 +51,19 @@ bool Lsv_isCompGate(Abc_Obj_t* pObj1, Abc_Obj_t* pObj2) {
   Abc_Obj_t *pObj1_fanin1 = Abc_ObjFanin1(pObj1);
   Abc_Obj_t *pObj2_fanin0 = Abc_ObjFanin0(pObj2);
   Abc_Obj_t *pObj2_fanin1 = Abc_ObjFanin1(pObj2);
-  if (pObj1_fanin0 == pObj2_fanin0) {
-    if (!(pObj1_fanin1 == pObj2_fanin1)) return false;
+  if (pObj1_fanin0 == pObj2_fanin0 && pObj1_fanin1 == pObj2_fanin1) {
     return (Abc_ObjFaninC0(pObj1) ^ Abc_ObjFaninC0(pObj2)) &
            (Abc_ObjFaninC1(pObj1) ^ Abc_ObjFaninC1(pObj2));
   }
-  else if (pObj1_fanin0 == pObj2_fanin1) {
-    if (!(pObj1_fanin1 == pObj2_fanin0)) return false;
+  else if (pObj1_fanin0 == pObj2_fanin1 && pObj1_fanin1 == pObj2_fanin0) {
     return (Abc_ObjFaninC0(pObj1) ^ Abc_ObjFaninC1(pObj2)) &
            (Abc_ObjFaninC1(pObj1) ^ Abc_ObjFaninC0(pObj2));
   }
-  else return false;
+  return false;
 }
 
 bool Lsv_isMajGate(Abc_Obj_t* pObj) {
-  if (Abc_ObjFaninC0(pObj) == 0 || Abc_ObjFaninC1(pObj) == 0) return false;
+  if (!Abc_ObjFaninC0(pObj) || !Abc_ObjFaninC1(pObj)) return false;
   Abc_Obj_t* fanin0 = Abc_ObjFanin0(pObj);
   Abc_Obj_t* fanin1 = Abc_ObjFanin1(pObj);
   if (Abc_ObjFaninNum(fanin0) == 0 || Abc_ObjFaninNum(fanin1) == 0) return false;
@@ -75,7 +73,7 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
   if ( Lsv_isCompGate(Abc_ObjFanin0(fanin0), fanin1) ) {
     g5 = Abc_ObjFanin0(fanin0);
     g6 = fanin0;
-    if (Abc_ObjFaninC0(fanin0) == 1) {
+    if (Abc_ObjFaninC0(fanin0)) {
       a = Abc_ObjFaninC1(g6)? -Abc_ObjFaninId1(g6) : Abc_ObjFaninId1(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
@@ -84,7 +82,7 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
   else if ( Lsv_isCompGate(Abc_ObjFanin1(fanin0), fanin1) ) {
     g5 = Abc_ObjFanin1(fanin0);
     g6 = fanin0;
-    if (Abc_ObjFaninC1(fanin0) == 1) {
+    if (Abc_ObjFaninC1(fanin0)) {
       a = Abc_ObjFaninC0(g6)? -Abc_ObjFaninId0(g6) : Abc_ObjFaninId0(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
@@ -93,7 +91,7 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
   else if ( Lsv_isCompGate(Abc_ObjFanin0(fanin1), fanin0) ) {
     g5 = Abc_ObjFanin0(fanin1);
     g6 = fanin1;
-    if (Abc_ObjFaninC0(fanin1) == 1) {
+    if (Abc_ObjFaninC0(fanin1)) {
       a = Abc_ObjFaninC1(g6)? -Abc_ObjFaninId1(g6) : Abc_ObjFaninId1(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
@@ -102,7 +100,7 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
   else if ( Lsv_isCompGate(Abc_ObjFanin1(fanin1), fanin0) ) {
     g5 = Abc_ObjFanin1(fanin1);
     g6 = fanin1;
-    if (Abc_ObjFaninC1(fanin1) == 1) {
+    if (Abc_ObjFaninC1(fanin1)) {
       a = Abc_ObjFaninC0(g6)? -Abc_ObjFaninId0(g6) : Abc_ObjFaninId0(g6);
       b = Abc_ObjFaninC0(g5)? Abc_ObjFaninId0(g5) : -Abc_ObjFaninId0(g5);
       c = Abc_ObjFaninC1(g5)? Abc_ObjFaninId1(g5) : -Abc_ObjFaninId1(g5);
@@ -121,12 +119,10 @@ Lsv_NtkMajFind( Abc_Ntk_t * pNtk )
 
   int i, totalMaj = 0;
   Abc_AigForEachAnd(pNtk, pObj, i) {
-    if (!Lsv_isMajGate(pObj)) continue;
-    ++totalMaj;
+    if (Lsv_isMajGate(pObj)) ++totalMaj;
   }
   Abc_NtkForEachPo(pNtk, pObj, i) {
-    if (!Lsv_isMajGate(pObj)) continue;
-    ++totalMaj;
+    if (Lsv_isMajGate(pObj)) ++totalMaj;
   }
   fprintf(stderr, "Total MAJ num: %d\n", totalMaj);
 }
