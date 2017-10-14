@@ -8,11 +8,11 @@
 
   Synopsis    [command file.]
 
-  Author      [Nian-Ze Lee]
+  Author      [Hao Chen]
   
   Affiliation [NTU]
 
-  Date        [17, Sep., 2017.]
+  Date        [14, Oct., 2017.]
 
 ***********************************************************************/
 
@@ -29,14 +29,14 @@ ABC_NAMESPACE_IMPL_START
 ////////////////////////////////////////////////////////////////////////
 
 // export to mainInit.c
-extern "C" void Lsv_Init ( Abc_Frame_t * );
-extern "C" void Lsv_End  ( Abc_Frame_t * );
+extern "C" void Lsv_Init (Abc_Frame_t*);
+extern "C" void Lsv_End  (Abc_Frame_t*);
 
 // command functions
-static int Abc_CommandMajFind( Abc_Frame_t * , int , char ** );
+static int Abc_CommandMajFind(Abc_Frame_t*, int, char**);
 
 // external functions defined in lsv package
-extern void Lsv_NtkMajFind( Abc_Ntk_t * );
+extern void Lsv_NtkMajFind(Abc_Ntk_t*);
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -54,15 +54,11 @@ extern void Lsv_NtkMajFind( Abc_Ntk_t * );
 
 ***********************************************************************/
 
-void
-Lsv_Init( Abc_Frame_t * pAbc )
-{
-   Cmd_CommandAdd( pAbc, "z LSV", "MAJ_find" , Abc_CommandMajFind , 0 );
+void Lsv_Init(Abc_Frame_t * pAbc) {
+   Cmd_CommandAdd(pAbc, "z LSV", "MAJ_find", Abc_CommandMajFind, 0);
 }
 
-void
-Lsv_End( Abc_Frame_t * pAbc )
-{
+void Lsv_End(Abc_Frame_t * pAbc) {
 }
 
 /**Function*************************************************************
@@ -77,9 +73,7 @@ Lsv_End( Abc_Frame_t * pAbc )
 
 ***********************************************************************/
 
-int
-Abc_CommandMajFind( Abc_Frame_t * pAbc , int argc , char ** argv )
-{
+int Abc_CommandMajFind( Abc_Frame_t * pAbc , int argc , char ** argv ) {
    // TODO:
    // step.1: get the current network
    // step.2: check whether the current network is strashed

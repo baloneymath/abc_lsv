@@ -47,17 +47,17 @@ ABC_NAMESPACE_IMPL_START
 
 bool Lsv_isCompGate(Abc_Obj_t* pObj1, Abc_Obj_t* pObj2) {
   if (Abc_ObjFaninNum(pObj1) == 0 || Abc_ObjFaninNum(pObj2) == 0) return false;
-  Abc_Obj_t *pObj1_fanin0 = Abc_ObjFanin0(pObj1);
-  Abc_Obj_t *pObj1_fanin1 = Abc_ObjFanin1(pObj1);
-  Abc_Obj_t *pObj2_fanin0 = Abc_ObjFanin0(pObj2);
-  Abc_Obj_t *pObj2_fanin1 = Abc_ObjFanin1(pObj2);
+  Abc_Obj_t* pObj1_fanin0 = Abc_ObjFanin0(pObj1);
+  Abc_Obj_t* pObj1_fanin1 = Abc_ObjFanin1(pObj1);
+  Abc_Obj_t* pObj2_fanin0 = Abc_ObjFanin0(pObj2);
+  Abc_Obj_t* pObj2_fanin1 = Abc_ObjFanin1(pObj2);
   if (pObj1_fanin0 == pObj2_fanin0 && pObj1_fanin1 == pObj2_fanin1) {
-    return (Abc_ObjFaninC0(pObj1) ^ Abc_ObjFaninC0(pObj2)) &
-           (Abc_ObjFaninC1(pObj1) ^ Abc_ObjFaninC1(pObj2));
+    return ( Abc_ObjFaninC0(pObj1) ^ Abc_ObjFaninC0(pObj2) ) &
+           ( Abc_ObjFaninC1(pObj1) ^ Abc_ObjFaninC1(pObj2) );
   }
   else if (pObj1_fanin0 == pObj2_fanin1 && pObj1_fanin1 == pObj2_fanin0) {
-    return (Abc_ObjFaninC0(pObj1) ^ Abc_ObjFaninC1(pObj2)) &
-           (Abc_ObjFaninC1(pObj1) ^ Abc_ObjFaninC0(pObj2));
+    return ( Abc_ObjFaninC0(pObj1) ^ Abc_ObjFaninC1(pObj2) ) &
+           ( Abc_ObjFaninC1(pObj1) ^ Abc_ObjFaninC0(pObj2) );
   }
   return false;
 }
@@ -111,20 +111,16 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
   return true;
 }
 
-void
-Lsv_NtkMajFind( Abc_Ntk_t * pNtk )  
-{
-  // TODO
-  Abc_Obj_t* pObj;
-
-  int i, totalMaj = 0;
+void Lsv_NtkMajFind(Abc_Ntk_t * pNtk) {
+  Abc_Obj_t* pObj = 0;
+  int i = 0, totalMaj = 0;
   Abc_AigForEachAnd(pNtk, pObj, i) {
     if (Lsv_isMajGate(pObj)) ++totalMaj;
   }
   Abc_NtkForEachPo(pNtk, pObj, i) {
     if (Lsv_isMajGate(pObj)) ++totalMaj;
   }
-  fprintf(stderr, "Total MAJ num: %d\n", totalMaj);
+  fprintf(stderr, "\nTotal MAJ-3 num: %d\n", totalMaj);
 }
 
 ////////////////////////////////////////////////////////////////////////
