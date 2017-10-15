@@ -107,7 +107,7 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
     }
   }
   else return false;
-  fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), a, b, c);
+  fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), -a, -b, -c);
   return true;
 }
 
