@@ -107,7 +107,7 @@ bool Lsv_isMajGate(Abc_Obj_t* pObj) {
     }
   }
   else return false;
-  fprintf(stderr, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), -a, -b, -c);
+  Abc_Print(ABC_STANDARD, "%d = MAJ(%d, %d, %d)\n", Abc_ObjId(pObj), -a, -b, -c);
   return true;
 }
 
@@ -120,7 +120,7 @@ void Lsv_NtkMajFind(Abc_Ntk_t * pNtk) {
   Abc_NtkForEachPo(pNtk, pObj, i) {
     if (Lsv_isMajGate(pObj)) ++totalMaj;
   }
-  fprintf(stderr, "# Total MAJ-3 num: %d\n", totalMaj);
+  Abc_Print(ABC_STANDARD, "# Total MAJ-3 num: %d\n", totalMaj);
 }
 
 ////////////////////////////////////////////////////////////////////////
