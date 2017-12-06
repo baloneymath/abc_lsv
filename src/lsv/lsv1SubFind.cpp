@@ -66,15 +66,12 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   int i = 0, j = 0;
   Vec_Ptr_t* vNodes = Vec_PtrStart(0);
   Abc_NtkForEachNode(pNtk, pObj_f, i) {
-    int flag = 0;
     Abc_NtkForEachNodeStop(pNtk, pObj_g, j, Abc_ObjId(pObj_f)) {
       if (Lsv_Is1Sub(pNtk, Abc_ObjId(pObj_f), Abc_ObjId(pObj_g))) {
-        flag = 1;
-        tmp.push_back(Abc_ObjId(pObj_g));
         Vec_PtrPush(vNodes, pObj_g);
       }
     }
-    if (flag) {
+    if (Vec_PtrSize(vNodes)) {
       Abc_Print(ABC_STANDARD, "n%d:", Abc_ObjId(pObj_f));
       Abc_Obj_t* pEntry = 0;
       int k = 0;
