@@ -20,8 +20,6 @@
 #include "sat/bsat/satSolver.h"
 #include "sat/cnf/cnf.h"
 #include "proof/fraig/fraig.h"
-#include <vector>
-using namespace std;
 
 ABC_NAMESPACE_IMPL_START
 
@@ -66,21 +64,26 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   //int status = sat_solver_solve(pSat, NULL, NULL, (ABC_INT64_T)0, (ABC_INT64_T)0, (ABC_INT64_T)0, (ABC_INT64_T)0);
 
   int i = 0, j = 0;
+  Vec_Ptr_t* vNodes = Vec_PtrStart(0);
   Abc_NtkForEachNode(pNtk, pObj_f, i) {
     int flag = 0;
-    vector<int> tmp;
     Abc_NtkForEachNodeStop(pNtk, pObj_g, j, Abc_ObjId(pObj_f)) {
       if (Lsv_Is1Sub(pNtk, Abc_ObjId(pObj_f), Abc_ObjId(pObj_g))) {
         flag = 1;
         tmp.push_back(Abc_ObjId(pObj_g));
+        Vec_PtrPush(vNodes, pObj_g);
       }
     }
     if (flag) {
       Abc_Print(ABC_STANDARD, "n%d:", Abc_ObjId(pObj_f));
-      for (int k = 0; k < tmp.size(); ++k) Abc_Print(ABC_STANDARD, " n%d", tmp[k]);
+      Abc_Obj_t* pEntry = 0;
+      int k = 0;
+      Vec_PtrForEachEntry(Abc_Obj_t*, vNodes, pEntry, k) Abc_Print(ABC_STANDARD, " n%d", Abc_ObjId(pEntry));
       Abc_Print(ABC_STANDARD, "\n");
+      Vec_PtrClear(vNodes);
     }
   }
+  Vec_PtrFreeFree(vNodes);
   Abc_Print(ABC_STANDARD, "\n");
 }
 
