@@ -91,8 +91,8 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   Abc_Ntk_t* pNtk_dup2 = Abc_NtkDup(pNtk);
   Abc_Obj_t* pFanout = 0;
   int i = 0;
-  Abc_ObjForEachFanout(Abc_NtkObj(pNtk_dup2, pObj_gId), pFanout, i) {
-    if (Abc_ObjFaninId0(pFanout) ==  pObj_gId) {
+  Abc_ObjForEachFanout(Abc_NtkObj(pNtk_dup2, pObj_fId), pFanout, i) {
+    if (Abc_ObjFaninId0(pFanout) ==  pObj_fId) {
       Abc_ObjXorFaninC(pFanout, 0);
     }
     else Abc_ObjXorFaninC(pFanout, 1);
