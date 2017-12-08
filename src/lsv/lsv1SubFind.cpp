@@ -62,7 +62,9 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   int i = 0, j = 0;
   Vec_Ptr_t* vNodes = Vec_PtrStart(0);
   Abc_NtkForEachNode(pNtk, pObj_f, i) {
-    Abc_NtkForEachNodeStop(pNtk, pObj_g, j, Abc_ObjId(pObj_f)) {
+    //Abc_NtkForEachNodeStop(pNtk, pObj_g, j, Abc_ObjId(pObj_f)) {
+    Abc_NtkForEachNode(pNtk, pObj_g, j) {
+      if (i == j) continue;
       if (Lsv_Is1Sub(pNtk, Abc_ObjId(pObj_f), Abc_ObjId(pObj_g))) {
         Vec_PtrPush(vNodes, pObj_g);
       }
@@ -87,6 +89,10 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   // pObj_g merges pObj_f
   Abc_Ntk_t* pNtk_dup = Abc_NtkDup(pNtk);
   Abc_ObjReplace(Abc_NtkObj(pNtk_dup, pObj_fId), Abc_NtkObj(pNtk_dup, pObj_gId));
+  if (!Abc_NtkIsAcyclic(pNtk_dup)) {
+    Abc_NtkDelete(pNtk_dup);
+    return 0;
+  }
   
   Abc_Ntk_t* pNtk_dup2 = Abc_NtkDup(pNtk);
   Abc_Obj_t* pFanout = 0;
@@ -99,10 +105,16 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   }
   Abc_ObjReplace(Abc_NtkObj(pNtk_dup2, pObj_fId), Abc_NtkObj(pNtk_dup2, pObj_gId));
   
-  int result = Lsv_NtkCecFraig(pNtk_dup, pNtk);
-  int result2 = Lsv_NtkCecFraig(pNtk_dup2, pNtk);
+  Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 1, 0);
+  Abc_Ntk_t* pNtk_dup2_strash = Abc_NtkStrash(pNtk_dup2, 0, 1, 0);
   Abc_NtkDelete(pNtk_dup);
   Abc_NtkDelete(pNtk_dup2);
+
+  int result = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
+  int result2 = Lsv_NtkCecFraig(pNtk_dup2_strash, pNtk);
+  Abc_NtkDelete(pNtk_dup_strash);
+  Abc_NtkDelete(pNtk_dup2_strash);
+  
   return result | result2;
 }
 
