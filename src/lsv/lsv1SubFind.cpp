@@ -69,18 +69,8 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
         Vec_PtrPush(vNodes, pObj_g);
       }
     }
-    if (Vec_PtrSize(vNodes)) {
-      // Abc_Print(ABC_STANDARD, "n%d:", Abc_ObjId(pObj_f));
-      // Abc_Obj_t* pEntry = 0;
-      // int k = 0;
-      // Vec_PtrForEachEntry(Abc_Obj_t*, vNodes, pEntry, k) {
-      //   Abc_Print(ABC_STANDARD, " n%d", Abc_ObjId(pEntry));
-      // }
-      // Abc_Print(ABC_STANDARD, "\n");
-      Vec_PtrPush(vNodes, pObj_f);
-      Vec_PtrPush(vTable, vNodes);
-      //Vec_PtrClear(vNodes);
-    }
+    Vec_PtrPush(vNodes, pObj_f);
+    Vec_PtrPush(vTable, vNodes);
   }
   Vec_Ptr_t* vNodes = 0;
   Abc_Obj_t* pEntry = 0;
@@ -92,7 +82,6 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
     }
     Abc_Print(ABC_STANDARD, "\n");
   }
-  //Vec_PtrFreeFree(vNodes);
   Vec_PtrFreeFree(vTable);
   Abc_Print(ABC_STANDARD, "\n");
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
@@ -119,9 +108,11 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   
   Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 1, 0);
   Abc_NtkDelete(pNtk_dup);
-
   int result = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
-  
+  if (result) {
+    Abc_NtkDelete(pNtk_dup_strash);
+    return 1;
+  }
   Vec_PtrForEachEntry(Abc_Obj_t*, vf_fanouts, pFanout, i) {
     if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk_dup_strash)) continue;
     Abc_Obj_t* pObj = Abc_NtkObj(pNtk_dup_strash, Abc_ObjId(pFanout));
@@ -131,8 +122,8 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   }
   int result2 = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
   Abc_NtkDelete(pNtk_dup_strash);
-
-  return result | result2;
+  
+  return result2;
 }
 
 int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
