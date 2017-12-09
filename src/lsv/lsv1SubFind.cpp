@@ -95,16 +95,6 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
     Abc_NtkDelete(pNtk_dup);
     return 0;
   }
-  Vec_Ptr_t* vf_fanouts = Vec_PtrStart(0);
-  Vec_Int_t* v_whichFanin = Vec_IntStart(0);
-  Abc_Obj_t* pFanout = 0;
-  int i = 0;
-  Abc_ObjForEachFanout(Abc_NtkObj(pNtk, pObj_fId), pFanout, i) {
-    Vec_PtrPush(vf_fanouts, pFanout);
-    if (Abc_ObjFaninId0(pFanout) == pObj_fId)
-      Vec_IntPush(v_whichFanin, 0);
-    else Vec_IntPush(v_whichFanin, 1);
-  }
   
   Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 1, 0);
   Abc_NtkDelete(pNtk_dup);
@@ -113,12 +103,14 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
     Abc_NtkDelete(pNtk_dup_strash);
     return 1;
   }
-  Vec_PtrForEachEntry(Abc_Obj_t*, vf_fanouts, pFanout, i) {
+  int i = 0; 
+  Abc_Obj_t* pFanout = 0;
+  Abc_ObjForEachFanout(Abc_NtkObj(pNtk, pObj_fId), pFanout, i) {
     if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk_dup_strash)) continue;
     Abc_Obj_t* pObj = Abc_NtkObj(pNtk_dup_strash, Abc_ObjId(pFanout));
     if (pObj == NULL) continue;
-    if (Vec_IntEntry(v_whichFanin, i)) Abc_ObjXorFaninC(pObj, 1);
-    else Abc_ObjXorFaninC(pObj, 0);
+    if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pObj, 0);
+    else Abc_ObjXorFaninC(pObj, 1);
   }
   int result2 = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
   Abc_NtkDelete(pNtk_dup_strash);
