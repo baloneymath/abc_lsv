@@ -45,7 +45,7 @@ extern "C" Vec_Ptr_t* Abc_NtkPartitionSmart(Abc_Ntk_t* pNtk, int nPartSizeLimit,
 extern "C" void       Abc_NtkConvertCos(Abc_Ntk_t* pNtk, Vec_Int_t* vOuts, Vec_Ptr_t* vOnePtr);
 
 void  Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk);
-int   Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId); 
+int   Lsv_Is1Sub(Abc_Ntk_t* pNtk, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId); 
 int   Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2);
 int   Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2);
 
@@ -59,19 +59,45 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Abc_Obj_t* pObj_f = 0; // to be merged
   Abc_Obj_t* pObj_g = 0; // to merge someone
 
-  int i = 0, j = 0;
+  int i = 0, j = 0, k = 0;
   Vec_Ptr_t* vTable = Vec_PtrStart(0);
+  Abc_Ntk_t* pNtk_dup = Abc_NtkDup(pNtk);
+  Vec_Int_t* vWhichFanin = Vec_IntStart(0);
   Abc_NtkForEachNode(pNtk, pObj_f, i) {
     Vec_Ptr_t* vNodes = Vec_PtrStart(0);
     Abc_NtkForEachNode(pNtk, pObj_g, j) {
       if (i == j) continue;
-      if (Lsv_Is1Sub(pNtk, Abc_ObjId(pObj_f), Abc_ObjId(pObj_g))) {
+      Abc_Obj_t* pFanout = 0;
+      // merge g to f
+      Abc_ObjForEachFanout(pObj_f, pFanout, k) {
+        Abc_Obj_t* pObj = Abc_NtkObj(pNtk_dup, Abc_ObjId(pFanout));
+        if (Abc_ObjFaninId0(pObj) == i) {
+          pObj->vFanins.pArray[0] = j;
+          Vec_IntPush(vWhichFanin, 0);
+        }
+        else {
+          pObj->vFanins.pArray[1] = j;
+          Vec_IntPush(vWhichFanin, 1);
+        }
+      }
+      // check 1sub
+      if (Lsv_Is1Sub(pNtk, pNtk_dup, i, j)) {
         Vec_PtrPush(vNodes, pObj_g);
       }
+      // recover
+      Abc_ObjForEachFanout(pObj_f, pFanout, k) {
+        Abc_Obj_t* pObj = Abc_NtkObj(pNtk_dup, Abc_ObjId(pFanout));
+        pObj->vFanins.pArray[Vec_IntEntry(vWhichFanin, k)] = i;
+      }
+      Vec_IntClear(vWhichFanin);
     }
     Vec_PtrPush(vNodes, pObj_f);
     Vec_PtrPush(vTable, vNodes);
   }
+  Vec_IntFree(vWhichFanin);
+  Abc_NtkDelete(pNtk_dup);
+  
+  // print result
   Vec_Ptr_t* vNodes = 0;
   Abc_Obj_t* pEntry = 0;
   Abc_Print(ABC_STANDARD, "\n");
@@ -87,33 +113,28 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
 }
 
-int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
+int Lsv_Is1Sub(Abc_Ntk_t* pNtk, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId) {
   // pObj_g merges pObj_f
-  Abc_Ntk_t* pNtk_dup = Abc_NtkDup(pNtk);
-  Abc_ObjReplace(Abc_NtkObj(pNtk_dup, pObj_fId), Abc_NtkObj(pNtk_dup, pObj_gId));
-  if (!Abc_NtkIsAcyclic(pNtk_dup)) {
-    Abc_NtkDelete(pNtk_dup);
+  if (!Abc_NtkIsAcyclic(pNtk2)) {
     return 0;
   }
-  
-  Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 1, 0);
-  Abc_NtkDelete(pNtk_dup);
-  int result = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
+  Abc_Ntk_t* pNtk2_strash = Abc_NtkStrash(pNtk2, 0, 1, 0);
+  int result = Lsv_NtkCecFraig(pNtk2_strash, pNtk);
   if (result) {
-    Abc_NtkDelete(pNtk_dup_strash);
+    Abc_NtkDelete(pNtk2_strash);
     return 1;
   }
   int i = 0; 
   Abc_Obj_t* pFanout = 0;
   Abc_ObjForEachFanout(Abc_NtkObj(pNtk, pObj_fId), pFanout, i) {
-    if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk_dup_strash)) continue;
-    Abc_Obj_t* pObj = Abc_NtkObj(pNtk_dup_strash, Abc_ObjId(pFanout));
+    if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk2_strash)) continue;
+    Abc_Obj_t* pObj = Abc_NtkObj(pNtk2_strash, Abc_ObjId(pFanout));
     if (pObj == NULL) continue;
     if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pObj, 0);
     else Abc_ObjXorFaninC(pObj, 1);
   }
-  int result2 = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
-  Abc_NtkDelete(pNtk_dup_strash);
+  int result2 = Lsv_NtkCecFraig(pNtk2_strash, pNtk);
+  Abc_NtkDelete(pNtk2_strash);
   
   return result2;
 }
