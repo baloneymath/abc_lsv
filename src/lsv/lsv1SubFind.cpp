@@ -149,7 +149,7 @@ int Lsv_SimCheck(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId,
   int i = 0;
   Abc_Obj_t* pObj = 0;
   int retValue = 1; 
-  for (int t = 0; t < nTimes; ++t) {
+  for (int t = 0; t < 64 * nTimes; ++t) {
     int simValue[Abc_NtkPiNum(pNtk1)];
     for (int j = 0; j < Abc_NtkPiNum(pNtk1); ++j) {
       simValue[j] = Abc_XsimRand2();
@@ -241,7 +241,7 @@ int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
   Abc_ObjSetXsim(Abc_AigConst1(pMiter), ABC_INIT_ONE);
   Abc_Obj_t* pObj = 0;
   int i = 0;
-  for (int t = 0; t < 10; ++t) {
+  for (int t = 0; t < 64 * 10; ++t) {
     int simValue[Abc_NtkPiNum(pMiter)];
     for (int j = 0; j < Abc_NtkPiNum(pMiter); ++j) {
       simValue[j] = Abc_XsimRand2();
