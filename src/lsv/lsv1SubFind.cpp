@@ -86,7 +86,7 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Abc_Print(ABC_STANDARD, "\n");
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
 }
-
+extern "C" void Abc_NtkCecFraigPartAuto( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
 int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   // pObj_g merges pObj_f
   Abc_Ntk_t* pNtk_dup = Abc_NtkDup(pNtk);
@@ -98,7 +98,10 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
   
   Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 1, 0);
   Abc_NtkDelete(pNtk_dup);
-  int result = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
+  // Abc_NtkCecFraigPartAuto(pNtk, pNtk_dup_strash, 0, 0);
+  // Abc_NtkDelete(pNtk_dup_strash);
+  // return 1;
+  int result = Lsv_NtkCecFraigPartAuto(pNtk_dup_strash, pNtk);
   if (result) {
     Abc_NtkDelete(pNtk_dup_strash);
     return 1;
@@ -112,7 +115,7 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
     if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pObj, 0);
     else Abc_ObjXorFaninC(pObj, 1);
   }
-  int result2 = Lsv_NtkCecFraig(pNtk_dup_strash, pNtk);
+  int result2 = Lsv_NtkCecFraigPartAuto(pNtk_dup_strash, pNtk);
   Abc_NtkDelete(pNtk_dup_strash);
   
   return result2;
@@ -120,9 +123,8 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, int pObj_fId, int pObj_gId) {
 
 int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
   Prove_Params_t Params, *pParams = &Params;
-  Abc_Ntk_t* pMiter = 0;
   // get the miter of the two networks
-  pMiter = Abc_NtkMiter(pNtk1, pNtk2, 1, 0, 0, 0);
+  Abc_Ntk_t* pMiter = Abc_NtkMiter(pNtk1, pNtk2, 1, 0, 0, 0);
   if (pMiter == NULL) {
     Abc_Print(ABC_ERROR, "Miter computation has failed.\n");
     return 0;
@@ -142,12 +144,7 @@ int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
 }
 
 int Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
-  Prove_Params_t Params, *pParams = &Params;
-  
-  // solve the CNF using the SAT solver
-  Prove_ParamsSetDefault(pParams);
-  pParams->nItersMax = 5;
-  
+    
   // get the miter of the two networks
   Abc_Ntk_t* pMiter = Abc_NtkMiter(pNtk1, pNtk2, 1, 1, 0, 0);
   if (pMiter == NULL) {
@@ -159,6 +156,10 @@ int Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
     Abc_NtkDelete(pMiter);
     return retValue;
   }
+  // solve the CNF using the SAT solver
+  Prove_Params_t Params, *pParams = &Params;
+  Prove_ParamsSetDefault(pParams);
+  pParams->nItersMax = 5;
   // partition the outputs
   Vec_Ptr_t* vParts = Abc_NtkPartitionSmart(pMiter, 300, 0);
 
@@ -176,11 +177,11 @@ int Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
     // check the miter for being constant
     retValue = Abc_NtkMiterIsConstant(pMiterPart);
     if (retValue == 0) {
+      status = 0;
       Abc_NtkDelete(pMiterPart);
-      Abc_NtkDelete(pMiter);
-      return 0;
+      break;
     }
-    if (retValue == 1) {
+    else if (retValue == 1) {
       Abc_NtkDelete(pMiterPart);
       continue;
     }
@@ -189,14 +190,12 @@ int Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
     if (retValue == -1) {
       status = -1;
       Abc_NtkDelete(pMiterPart);
-      Abc_NtkDelete(pMiter);
-      return 0;
+      break;
     }
     else if (retValue == 0) {
       status = 0;
       Abc_NtkDelete(pMiterPart);
-      Abc_NtkDelete(pMiter);
-      return 0;
+      break;
     }
     else {
       nOutputs += Vec_IntSize(vOne);
