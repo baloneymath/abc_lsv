@@ -53,7 +53,7 @@ int   Lsv_NtkSimVerifyPattern(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int* pModel);
 int   Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter);
 int   Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter);
 void  Lsv_Ntk1SubDump(Vec_Ptr_t* vTable, Abc_VerbLevel level);
-void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, FILE* fp);
+void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, char* filename);
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -109,6 +109,7 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   
   // print result
   Lsv_Ntk1SubDump(vTable, ABC_STANDARD);
+  Lsv_Ntk1SubDumpFile(vTable, Abc_NtkName(pNtk));
   Vec_PtrFreeFree(vTable);
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
 }
@@ -271,8 +272,8 @@ void  Lsv_Ntk1SubDump(Vec_Ptr_t* vTable, Abc_VerbLevel level) {
   Abc_Print(level, "\n");
 }
 
-void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, FILE* fp, char* filename) {
-  fp = fopen(filename, "w");
+void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, char* filename) {
+  FILE* fp = fopen(filename, "w");
   Vec_Ptr_t* vNodes = 0;
   Abc_Obj_t* pEntry = 0;
   fprintf(fp, "\n");
