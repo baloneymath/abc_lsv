@@ -43,43 +43,59 @@ ABC_NAMESPACE_IMPL_START
 ////////////////////////////////////////////////////////////////////////
 extern "C" Vec_Ptr_t* Abc_NtkPartitionSmart(Abc_Ntk_t* pNtk, int nPartSizeLimit, int fVerbose);
 extern "C" void       Abc_NtkConvertCos(Abc_Ntk_t* pNtk, Vec_Int_t* vOuts, Vec_Ptr_t* vOnePtr);
-
-// simulation
-extern "C" void       Abc_NtkXValueSimulate(Abc_Ntk_t* pNtk, int nFrames, int fXInputs, int fXState, int fVerbose);
-static inline int     Abc_XsimRand2() { return (rand() & 1) ? ABC_INIT_ONE : ABC_INIT_ZERO; }
-static inline void    Abc_ObjSetXsim(Abc_Obj_t* pObj, int Value)  { pObj->pCopy = (Abc_Obj_t* )(ABC_PTRINT_T)Value;  }
-static inline int     Abc_ObjGetXsim(Abc_Obj_t* pObj)             { return (int)(ABC_PTRINT_T)pObj->pCopy;           }
-static inline int Abc_XsimInv(int Value) { 
-  if (Value == ABC_INIT_ZERO) return ABC_INIT_ONE;
-  else if (Value == ABC_INIT_ONE) return ABC_INIT_ZERO;
-  assert(Value == ABC_INIT_DC);       
-  return ABC_INIT_DC;
-}
-static inline int Abc_XsimAnd(int Value0, int Value1) { 
-  if (Value0 == ABC_INIT_ZERO || Value1 == ABC_INIT_ZERO) return ABC_INIT_ZERO;
-  if (Value0 == ABC_INIT_DC || Value1 == ABC_INIT_DC) return ABC_INIT_DC;
-  assert(Value0 == ABC_INIT_ONE && Value1 == ABC_INIT_ONE);
-  return ABC_INIT_ONE;
-}
-static inline int Abc_ObjGetXsimFanin0(Abc_Obj_t* pObj) { 
-  int retValue = Abc_ObjGetXsim(Abc_ObjFanin0(pObj));
-  return Abc_ObjFaninC0(pObj)? Abc_XsimInv(retValue) : retValue;
-}
-static inline int Abc_ObjGetXsimFanin1(Abc_Obj_t* pObj) { 
-  int retValue = Abc_ObjGetXsim(Abc_ObjFanin1(pObj));
-  return Abc_ObjFaninC1(pObj)? Abc_XsimInv(retValue) : retValue;
-}
-
+extern "C" int*       Abc_NtkVerifySimulatePattern(Abc_Ntk_t* pNtk, int* pModel);
 
 // lsv functions
 void  Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk);
-int   Lsv_SimCheck(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nTimes);
-int   Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId); 
+int   Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nSimIter); 
+int   Lsv_NtkSimCheck(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nSimIter);
+int   Lsv_NtkSimVerifyPattern(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int* pModel);
 int   Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2);
 int   Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2);
 void  Lsv_Ntk1SubDump(Vec_Ptr_t* vTable, Abc_VerbLevel level);
 void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, FILE* fp);
 
+static inline int Lsv_XsimRand2() {
+  return (rand() & 0x1) ? ABC_INIT_ONE : ABC_INIT_ZERO;
+}
+static inline void Lsv_ObjSetXsim(Abc_Obj_t* pObj, int value) {
+  pObj->pCopy = (Abc_Obj_t*)(ABC_PTRINT_T)value;
+}
+static inline int Lsv_ObjGetXsim(Abc_Obj_t* pObj) {
+  return (int)(ABC_PTRINT_T)pObj->pCopy;
+}
+static inline int Lsv_XsimInv(int value) { 
+  if (value == ABC_INIT_ZERO) return ABC_INIT_ONE;
+  else if (value == ABC_INIT_ONE) return ABC_INIT_ZERO;
+  assert(value == ABC_INIT_DC);       
+  return ABC_INIT_DC;
+}
+static inline int Lsv_XsimAnd(int value0, int value1) { 
+  if (value0 == ABC_INIT_ZERO || value1 == ABC_INIT_ZERO) return ABC_INIT_ZERO;
+  if (value0 == ABC_INIT_DC || value1 == ABC_INIT_DC) return ABC_INIT_DC;
+  assert(value0 == ABC_INIT_ONE && value1 == ABC_INIT_ONE);
+  return ABC_INIT_ONE;
+}
+static inline int Lsv_ObjGetXsimFanin0(Abc_Obj_t* pObj) { 
+  int retValue = Lsv_ObjGetXsim(Abc_ObjFanin0(pObj));
+  return Abc_ObjFaninC0(pObj)? Lsv_XsimInv(retValue) : retValue;
+}
+static inline int Lsv_ObjGetXsimFanin1(Abc_Obj_t* pObj) { 
+  int retValue = Lsv_ObjGetXsim(Abc_ObjFanin1(pObj));
+  return Abc_ObjFaninC1(pObj)? Lsv_XsimInv(retValue) : retValue;
+}
+static inline void Lsv_XsimPrint(FILE* pFile, int value) { 
+  if (value == ABC_INIT_ZERO) {
+    fprintf(pFile, "0");
+    return;
+  }
+  if (value == ABC_INIT_ONE) {
+    fprintf(pFile, "1");
+    return;
+  }
+  assert(value == ABC_INIT_DC);       
+  fprintf(pFile, "x");
+}
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -112,13 +128,10 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
         }
       }
       if (Abc_NtkIsAcyclic(pNtk_dup)) {
+        // check 1sub
         Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 1, 0);
-        // perform fast sim check
-        if (Lsv_SimCheck(pNtk, pNtk_dup_strash, i, j, 10)) {
-          // check 1sub
-          if (Lsv_Is1Sub(pNtk, pNtk_dup_strash, i, j)) {
-            Vec_PtrPush(vNodes, pObj_g);
-          }
+        if (Lsv_Is1Sub(pNtk, pNtk_dup_strash, i, j, 300)) {
+          Vec_PtrPush(vNodes, pObj_g);
         }
         Abc_NtkDelete(pNtk_dup_strash);
       }
@@ -141,78 +154,11 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
 }
 
-int Lsv_SimCheck(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nTimes) {
-  return 1;
-  assert(Abc_NtkIsStrash(pNtk1) && Abc_NtkIsStrash(pNtk2));
-  Abc_ObjSetXsim(Abc_AigConst1(pNtk1), ABC_INIT_ONE);
-  Abc_ObjSetXsim(Abc_AigConst1(pNtk2), ABC_INIT_ONE);
-  int i = 0;
-  Abc_Obj_t* pObj = 0;
-  int retValue = 1; 
-  for (int t = 0; t < 64 * nTimes; ++t) {
-    int simValue[Abc_NtkPiNum(pNtk1)];
-    for (int j = 0; j < Abc_NtkPiNum(pNtk1); ++j) {
-      simValue[j] = Abc_XsimRand2();
-    }
-    Abc_NtkForEachPi(pNtk1, pObj, i)  Abc_ObjSetXsim(pObj, simValue[i]);
-    Abc_AigForEachAnd(pNtk1, pObj, i)  Abc_ObjSetXsim(pObj, Abc_XsimAnd(Abc_ObjGetXsimFanin0(pObj), Abc_ObjGetXsimFanin1(pObj)));
-    Abc_NtkForEachPo(pNtk1, pObj, i)   Abc_ObjSetXsim(pObj, Abc_ObjGetXsimFanin0(pObj));
-    
-    Abc_NtkForEachPi(pNtk2, pObj, i)  Abc_ObjSetXsim(pObj, simValue[i]);
-    Abc_AigForEachAnd(pNtk2, pObj, i) Abc_ObjSetXsim(pObj, Abc_XsimAnd(Abc_ObjGetXsimFanin0(pObj), Abc_ObjGetXsimFanin1(pObj)));
-    Abc_NtkForEachPo(pNtk2, pObj, i)  Abc_ObjSetXsim(pObj, Abc_ObjGetXsimFanin0(pObj));
-    
-    // Abc_NtkForEachPo(pNtk1, pObj, i) printf(" %d", Abc_ObjGetXsim(Abc_NtkPo(pNtk1, i))); printf("\n");
-    // Abc_NtkForEachPo(pNtk2, pObj, i) printf(" %d", Abc_ObjGetXsim(Abc_NtkPo(pNtk2, i))); printf("\n");
-    for (int j = 0; j < Abc_NtkPoNum(pNtk1); ++j) {
-      if (Abc_ObjGetXsim(Abc_NtkPo(pNtk1, j)) ^ Abc_ObjGetXsim(Abc_NtkPo(pNtk2, j))) {
-        retValue = 0;
-        break;
-      }
-    }
-    if (!retValue) break;
-  }
-  if (retValue) {
-    return 1;
-  }
-  // Abc_Ntk_t* pMiter = Abc_NtkMiter(pNtk1, pNtk2, 1, 0, 0, 0);
-  // Abc_NtkDelete(pMiter);
-  Abc_Obj_t* pFanout = 0;
-  Abc_ObjForEachFanout(Abc_NtkObj(pNtk1, pObj_fId), pFanout, i) {
-    if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk2)) continue;
-    Abc_Obj_t* pTmp = Abc_NtkObj(pNtk2, Abc_ObjId(pFanout));
-    if (pTmp == NULL) continue;
-    if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pTmp, 0);
-    else Abc_ObjXorFaninC(pTmp, 1);
-  }
-  for (int t = 0; t < nTimes; ++t) {
-    int simValue[Abc_NtkPiNum(pNtk1)];
-    for (int j = 0; j < Abc_NtkPiNum(pNtk1); ++j) {
-      simValue[j] = Abc_XsimRand2();
-    }
-    Abc_NtkForEachPi(pNtk1, pObj, i)   Abc_ObjSetXsim(pObj, simValue[i]);
-    Abc_AigForEachAnd(pNtk1, pObj, i)  Abc_ObjSetXsim(pObj, Abc_XsimAnd(Abc_ObjGetXsimFanin0(pObj), Abc_ObjGetXsimFanin1(pObj)));
-    Abc_NtkForEachPo(pNtk1, pObj, i)   Abc_ObjSetXsim(pObj, Abc_ObjGetXsimFanin0(pObj));
-    
-    Abc_NtkForEachPi(pNtk2, pObj, i)  Abc_ObjSetXsim(pObj, simValue[i]);
-    Abc_AigForEachAnd(pNtk2, pObj, i) Abc_ObjSetXsim(pObj, Abc_XsimAnd(Abc_ObjGetXsimFanin0(pObj), Abc_ObjGetXsimFanin1(pObj)));
-    Abc_NtkForEachPo(pNtk2, pObj, i)  Abc_ObjSetXsim(pObj, Abc_ObjGetXsimFanin0(pObj));
-    for (int j = 0; j < Abc_NtkPoNum(pNtk1); ++j) {
-      if (Abc_ObjGetXsim(Abc_NtkPo(pNtk1, j)) ^ Abc_ObjGetXsim(Abc_NtkPo(pNtk2, j))) {
-        return 0;
-      }
-    }
-  }
-  return 1; // 0: doesn't pass, 1: pass
-}
-
-int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId) {
+int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nSimIter) {
   // pObj_g merges pObj_f
-  assert(Abc_NtkIsStrash(pNtk2));
-  int result = Lsv_NtkCecFraig(pNtk1, pNtk2);
-  if (result) {
-    return 1;
-  }
+  assert(Abc_NtkIsStrash(pNtk1) && Abc_NtkIsStrash(pNtk2));
+  if (!Lsv_NtkSimCheck(pNtk1, pNtk2, pObj_fId, pObj_gId, nSimIter)) return 0;
+  if (Lsv_NtkCecFraig(pNtk1, pNtk2)) return 1;
   int i = 0; 
   Abc_Obj_t* pFanout = 0;
   Abc_ObjForEachFanout(Abc_NtkObj(pNtk1, pObj_fId), pFanout, i) {
@@ -223,6 +169,109 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId) {
     else Abc_ObjXorFaninC(pTmp, 1);
   }
   return Lsv_NtkCecFraig(pNtk1, pNtk2);
+}
+
+int Lsv_NtkSimCheck(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nSimIter) {
+  int simVal[Abc_NtkPiNum(pNtk1)];
+  for (int t = 0; t < 300; ++t) {
+    for (int j = 0; j < Abc_NtkPiNum(pNtk1); ++j)
+      simVal[j] = (rand() & 0x1);
+    if (!Lsv_NtkSimVerifyPattern(pNtk1, pNtk2, simVal)) {
+      return 0;
+    }
+  }
+  return 1;
+  assert(Abc_NtkIsStrash(pNtk1) && Abc_NtkIsStrash(pNtk2));
+  Lsv_ObjSetXsim(Abc_AigConst1(pNtk1), ABC_INIT_ONE);
+  Lsv_ObjSetXsim(Abc_AigConst1(pNtk2), ABC_INIT_ONE);
+  int i = 0;
+  int retValue = 1;
+  Abc_Obj_t* pObj = 0;
+  for (int t = 0; t < nSimIter; ++t) {
+    Abc_NtkForEachPi(pNtk1, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_XsimRand2());
+    Abc_AigForEachAnd(pNtk1, pObj, i) Lsv_ObjSetXsim(pObj, Lsv_XsimAnd(Lsv_ObjGetXsimFanin0(pObj), Lsv_ObjGetXsimFanin1(pObj)));
+    Abc_NtkForEachPo(pNtk1, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsimFanin0(pObj));
+    
+    Abc_NtkForEachPi(pNtk2, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsim(Abc_NtkPi(pNtk1, i)));
+    Abc_AigForEachAnd(pNtk2, pObj, i) Lsv_ObjSetXsim(pObj, Lsv_XsimAnd(Lsv_ObjGetXsimFanin0(pObj), Lsv_ObjGetXsimFanin1(pObj)));
+    Abc_NtkForEachPo(pNtk2, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsimFanin0(pObj));
+
+
+    Abc_NtkForEachPo(pNtk1, pObj, i) {
+      if (Lsv_ObjGetXsim(pObj) != Lsv_ObjGetXsim(Abc_NtkPo(pNtk2, i))) {
+        // Abc_Obj_t* pTmp = 0;
+        // int j = 0;
+        // Abc_NtkForEachPi(pNtk1, pTmp, j) {
+        //   printf("ssssssssssss%d ", Lsv_ObjGetXsim(Abc_NtkPi(pNtk1, j)));
+        //   printf("%d %d\n", Lsv_ObjGetXsim(Abc_NtkPi(pNtk1, j)), Lsv_ObjGetXsim(Abc_NtkPi(pNtk2, j)));
+        //   printf("\n");
+        // }
+        // printf("\n\n\n\n");
+        // Abc_Ntk_t* pMiter = Abc_NtkMiter(pNtk1, pNtk2, 1, 0, 0, 0);
+        // Abc_NtkForEachPi(pNtk1, pTmp, j) {
+        //   printf("ssssssssssss%d ", Lsv_ObjGetXsim(Abc_NtkPi(pNtk1, j)));
+        //   printf("%d %d\n", Lsv_ObjGetXsim(Abc_NtkPi(pNtk1, j)), Lsv_ObjGetXsim(Abc_NtkPi(pNtk2, j)));
+        //   printf("\n");
+        // }
+        // Abc_NtkDelete(pMiter);
+        retValue = 0;
+        break;
+      }
+    }
+    if (!retValue) break;
+  }
+  if (retValue) return 1;
+  retValue = 1;
+  Abc_Obj_t* pFanout = 0;
+  Abc_ObjForEachFanout(Abc_NtkObj(pNtk1, pObj_fId), pFanout, i) {
+    if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk2)) continue;
+    Abc_Obj_t* pTmp = Abc_NtkObj(pNtk2, Abc_ObjId(pFanout));
+    if (pTmp == NULL) continue;
+    if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pTmp, 0);
+    else Abc_ObjXorFaninC(pTmp, 1);
+  }
+  for (int t = 0; t < nSimIter; ++t) {
+    Abc_NtkForEachPi(pNtk1, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_XsimRand2());
+    Abc_AigForEachAnd(pNtk1, pObj, i) Lsv_ObjSetXsim(pObj, Lsv_XsimAnd(Lsv_ObjGetXsimFanin0(pObj), Lsv_ObjGetXsimFanin1(pObj)));
+    Abc_NtkForEachPo(pNtk1, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsimFanin0(pObj));
+    
+    Abc_NtkForEachPi(pNtk2, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsim(Abc_NtkPi(pNtk1, i)));
+    Abc_AigForEachAnd(pNtk2, pObj, i) Lsv_ObjSetXsim(pObj, Lsv_XsimAnd(Lsv_ObjGetXsimFanin0(pObj), Lsv_ObjGetXsimFanin1(pObj)));
+    Abc_NtkForEachPo(pNtk2, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsimFanin0(pObj));
+    
+    Abc_NtkForEachPo(pNtk1, pObj, i) {
+      if (Lsv_ObjGetXsim(pObj) != Lsv_ObjGetXsim(Abc_NtkPo(pNtk2, i))) {
+        retValue = 0;
+        break;
+      }
+    }
+    if (!retValue) break;
+  }
+  Abc_ObjForEachFanout(Abc_NtkObj(pNtk1, pObj_fId), pFanout, i) {
+    if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk2)) continue;
+    Abc_Obj_t* pTmp = Abc_NtkObj(pNtk2, Abc_ObjId(pFanout));
+    if (pTmp == NULL) continue;
+    if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pTmp, 0);
+    else Abc_ObjXorFaninC(pTmp, 1);
+  }
+  return retValue; // 0: doesn't pass, 1: pass
+}
+
+int Lsv_NtkSimVerifyPattern(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int* pModel) {
+  assert(Abc_NtkCiNum(pNtk1) == Abc_NtkCiNum(pNtk2));
+  assert(Abc_NtkCoNum(pNtk1) == Abc_NtkCoNum(pNtk2));
+  int* pValues1 = Abc_NtkVerifySimulatePattern(pNtk1, pModel);
+  int* pValues2 = Abc_NtkVerifySimulatePattern(pNtk2, pModel);
+  int retValue = 1;
+  for (int i = 0; i < Abc_NtkCoNum(pNtk1); ++i) {
+    if (pValues1[i] != pValues2[i]) {
+      retValue = 0;
+      break;
+    }
+  }
+  ABC_FREE(pValues1);
+  ABC_FREE(pValues2);
+  return retValue;
 }
 
 int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
@@ -238,22 +287,31 @@ int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
     Abc_NtkDelete(pMiter);
     return retValue;
   }
-  Abc_ObjSetXsim(Abc_AigConst1(pMiter), ABC_INIT_ONE);
-  Abc_Obj_t* pObj = 0;
-  int i = 0;
-  for (int t = 0; t < 64 * 10; ++t) {
-    int simValue[Abc_NtkPiNum(pMiter)];
-    for (int j = 0; j < Abc_NtkPiNum(pMiter); ++j) {
-      simValue[j] = Abc_XsimRand2();
-    }
-    Abc_NtkForEachPi(pMiter, pObj, i)   Abc_ObjSetXsim(pObj, simValue[i]);
-    Abc_AigForEachAnd(pMiter, pObj, i)  Abc_ObjSetXsim(pObj, Abc_XsimAnd(Abc_ObjGetXsimFanin0(pObj), Abc_ObjGetXsimFanin1(pObj)));
-    Abc_NtkForEachPo(pMiter, pObj, i)   Abc_ObjSetXsim(pObj, Abc_ObjGetXsimFanin0(pObj));
-    if (Abc_ObjGetXsim(Abc_NtkPo(pMiter, 0)) != ABC_INIT_ZERO) {
-      Abc_NtkDelete(pMiter);
-      return 0;
-    }
-  }
+  // simulate
+  // int simVal[Abc_NtkPiNum(pNtk1)];
+  // for (int t = 0; t < 300; ++t) {
+  //   for (int j = 0; j < Abc_NtkPiNum(pNtk1); ++j)
+  //     simVal[j] = (rand() & 0x1);
+  //   int* pp = Abc_NtkVerifySimulatePattern(pMiter, simVal);
+  //   if (pp[0] == 1) {
+  //     Abc_NtkDelete(pMiter);
+  //     ABC_FREE(pp);
+  //     return 0;
+  //   }
+  //   ABC_FREE(pp);
+  // }
+  // Lsv_ObjSetXsim(Abc_AigConst1(pMiter), ABC_INIT_ONE);
+  // Abc_Obj_t* pObj = 0;
+  // int i = 0;
+  // for (int t = 0; t < 250; ++t) {
+  //   Abc_NtkForEachPi(pMiter, pObj, i)   Lsv_ObjSetXsim(pObj, Lsv_XsimRand2());
+  //   Abc_AigForEachAnd(pMiter, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_XsimAnd(Lsv_ObjGetXsimFanin0(pObj), Lsv_ObjGetXsimFanin1(pObj)));
+  //   Abc_NtkForEachPo(pMiter, pObj, i)   Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsimFanin0(pObj));
+  //   if (Lsv_ObjGetXsim(Abc_NtkPo(pMiter, 0)) != ABC_INIT_ZERO) {
+  //     Abc_NtkDelete(pMiter);
+  //     return 0;
+  //   }
+  // }
   // solve the CNF using the SAT solver
   Prove_Params_t Params, *pParams = &Params;
   Prove_ParamsSetDefault(pParams);
@@ -303,6 +361,23 @@ int Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2) {
     else if (retValue == 1) {
       Abc_NtkDelete(pMiterPart);
       continue;
+    }
+    Lsv_ObjSetXsim(Abc_AigConst1(pMiterPart), ABC_INIT_ONE);
+    Abc_Obj_t* pObj = 0;
+    int i = 0;
+    for (int t = 0; t < 64 * 10; ++t) {
+      int simValue[Abc_NtkPiNum(pMiterPart)];
+      for (int j = 0; j < Abc_NtkPiNum(pMiterPart); ++j) {
+        simValue[j] = Lsv_XsimRand2();
+      }
+      Abc_NtkForEachPi(pMiterPart, pObj, i)   Lsv_ObjSetXsim(pObj, simValue[i]);
+      Abc_AigForEachAnd(pMiterPart, pObj, i)  Lsv_ObjSetXsim(pObj, Lsv_XsimAnd(Lsv_ObjGetXsimFanin0(pObj), Lsv_ObjGetXsimFanin1(pObj)));
+      Abc_NtkForEachPo(pMiterPart, pObj, i)   Lsv_ObjSetXsim(pObj, Lsv_ObjGetXsimFanin0(pObj));
+      if (Lsv_ObjGetXsim(Abc_NtkPo(pMiterPart, 0)) != ABC_INIT_ZERO) {
+        Abc_NtkDelete(pMiterPart);
+        Abc_NtkDelete(pMiter);
+        return 0;
+      }
     }
     // solve the problem
     retValue = Abc_NtkIvyProve(&pMiterPart, pParams);
@@ -357,6 +432,7 @@ void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, FILE* fp, char* filename) {
     fprintf(fp, "\n");
   }
   fprintf(fp, "\n");
+  fclose(fp);
 }
 
 ABC_NAMESPACE_IMPL_END
