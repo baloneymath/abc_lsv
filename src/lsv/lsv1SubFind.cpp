@@ -109,7 +109,7 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   
   // print result
   Lsv_Ntk1SubDump(vTable, ABC_STANDARD);
-  Lsv_Ntk1SubDumpFile(vTable, Abc_NtkName(pNtk));
+  //Lsv_Ntk1SubDumpFile(vTable, Abc_NtkName(pNtk) + '.1sub');
   Vec_PtrFreeFree(vTable);
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
 }
