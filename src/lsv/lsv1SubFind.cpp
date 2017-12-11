@@ -44,7 +44,7 @@ ABC_NAMESPACE_IMPL_START
 extern "C" Vec_Ptr_t* Abc_NtkPartitionSmart(Abc_Ntk_t* pNtk, int nPartSizeLimit, int fVerbose);
 extern "C" void       Abc_NtkConvertCos(Abc_Ntk_t* pNtk, Vec_Int_t* vOuts, Vec_Ptr_t* vOnePtr);
 extern "C" int*       Abc_NtkVerifySimulatePattern(Abc_Ntk_t* pNtk, int* pModel);
-extern "C" void Abc_NtkVerifyReportError( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int * pModel );
+extern "C" void       Abc_NtkVerifyReportError( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int * pModel );
 
 // lsv functions
 void  Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk);
@@ -176,7 +176,7 @@ int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter) {
   Prove_Params_t Params, *pParams = &Params;
   Prove_ParamsSetDefault(pParams);
   pParams->nItersMax = 5;
-  retValue = Abc_NtkIvyProve(&pMiter, pParams);
+  retValue = Abc_NtkMiterProve(&pMiter, pParams);
   Abc_NtkDelete(pMiter);
   return retValue;
 }
