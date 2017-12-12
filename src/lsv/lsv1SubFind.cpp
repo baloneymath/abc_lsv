@@ -70,7 +70,7 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Abc_Ntk_t* pNtk_dup = Abc_NtkDup(pNtk);
   Vec_Int_t* vWhichFanin = Vec_IntStart(0);
   Abc_AigForEachAnd(pNtk, pObj_f, i) {
-    Vec_Ptr_t* vNodes = Vec_PtrStart(0);
+    Vec_Int_t* vNodes = Vec_IntStart(0);
     Abc_AigForEachAnd(pNtk, pObj_g, j) {
       if (i == j) continue;
       // merge g to f
@@ -89,9 +89,9 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
       if (Abc_NtkIsAcyclic(pNtk_dup)) {
         // check 1sub
         Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 0, 0);
-        if (Lsv_Is1Sub(pNtk, pNtk_dup_strash, i, j, 2 * Abc_NtkObjNum(pNtk))) {
-          Vec_PtrPush(vNodes, pObj_g);
-        }
+        int retValue = Lsv_Is1Sub(pNtk, pNtk_dup_strash, i, j, 2 * Abc_NtkObjNum(pNtk));
+        if (retValue == 1) Vec_IntPush(vNodes, j);
+        else if (retValue == 2) Vec_IntPush(vNodes, -j);
         Abc_NtkDelete(pNtk_dup_strash);
       }
       // recover
@@ -101,8 +101,10 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
       }
       Vec_IntClear(vWhichFanin);
     }
-    Vec_PtrPush(vNodes, pObj_f);
-    Vec_PtrPush(vTable, vNodes);
+    if (Vec_IntSize(vNodes)) {
+      Vec_IntPush(vNodes, i);
+      Vec_PtrPush(vTable, vNodes);
+    }
   }
   Vec_IntFree(vWhichFanin);
   Abc_NtkDelete(pNtk_dup);
@@ -127,7 +129,7 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, i
     if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pTmp, 0);
     else Abc_ObjXorFaninC(pTmp, 1);
   }
-  return Lsv_NtkCecFraig(pNtk1, pNtk2, nSimIter);
+  return Lsv_NtkCecFraig(pNtk1, pNtk2, nSimIter) ? 2 : 0;
 }
 
 int Lsv_NtkSimVerifyPattern(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int* pModel) {
@@ -259,14 +261,14 @@ int Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter) {
 }
 
 void  Lsv_Ntk1SubDump(Vec_Ptr_t* vTable, Abc_VerbLevel level) {
-  Vec_Ptr_t* vNodes = 0;
-  Abc_Obj_t* pEntry = 0;
+  Vec_Int_t* vNodes = 0;
   Abc_Print(level, "\n");
-  int i = 0, j = 0;
-  Vec_PtrForEachEntry(Vec_Ptr_t*, vTable, vNodes, i) {
-    Abc_Print(level, "n%d:", Abc_ObjId((Abc_Obj_t*)Vec_PtrEntryLast(vNodes)));
-    Vec_PtrForEachEntryStop(Abc_Obj_t*, vNodes, pEntry, j, Vec_PtrSize(vNodes) - 1) {
-      Abc_Print(level, " n%d", Abc_ObjId(pEntry));
+  int i = 0, j = 0, Entry = 0;
+  Vec_PtrForEachEntry(Vec_Int_t*, vTable, vNodes, i) {
+    Abc_Print(level, "n%d:", Vec_IntEntryLast(vNodes));
+    Vec_IntForEachEntryStop(vNodes, Entry, j, Vec_IntSize(vNodes) - 1) {
+      if (Entry > 0) Abc_Print(level, "  n%d", Entry);
+      else Abc_Print(level, " -n%d", -Entry);
     }
     Abc_Print(level, "\n");
   }
@@ -275,14 +277,14 @@ void  Lsv_Ntk1SubDump(Vec_Ptr_t* vTable, Abc_VerbLevel level) {
 
 void  Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, char* filename) {
   FILE* fp = fopen(filename, "w");
-  Vec_Ptr_t* vNodes = 0;
-  Abc_Obj_t* pEntry = 0;
+  Vec_Int_t* vNodes = 0;
   fprintf(fp, "\n");
-  int i = 0, j = 0;
-  Vec_PtrForEachEntry(Vec_Ptr_t*, vTable, vNodes, i) {
-    fprintf(fp, "n%d:", Abc_ObjId((Abc_Obj_t*)Vec_PtrEntryLast(vNodes)));
-    Vec_PtrForEachEntryStop(Abc_Obj_t*, vNodes, pEntry, j, Vec_PtrSize(vNodes) - 1) {
-      fprintf(fp, " n%d", Abc_ObjId(pEntry));
+  int i = 0, j = 0, Entry = 0;
+  Vec_PtrForEachEntry(Vec_Int_t*, vTable, vNodes, i) {
+    fprintf(fp, "n%d:", Vec_IntEntryLast(vNodes));
+    Vec_IntForEachEntryStop(vNodes, Entry, j, Vec_IntSize(vNodes) - 1) {
+      if (Entry > 0) fprintf(fp, "  n%d", Entry);
+      else fprintf(fp, " -n%d", -Entry);
     }
     fprintf(fp, "\n");
   }
