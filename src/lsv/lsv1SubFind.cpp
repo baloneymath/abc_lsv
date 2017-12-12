@@ -168,6 +168,7 @@ int Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter) {
       simValue[j] = (rand() & 0x1);
     int* pValues = Abc_NtkVerifySimulatePattern(pMiter, simValue);
     if (pValues[0]) {
+      ABC_FREE(pValues);
       Abc_NtkDelete(pMiter);
       return 0;
     }
