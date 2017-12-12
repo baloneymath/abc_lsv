@@ -190,7 +190,8 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int fId, int gId, int nSimIte
     if (Abc_ObjFaninId0(pFanout) == fId) Abc_ObjXorFaninC(pTmp, 0);
     else Abc_ObjXorFaninC(pTmp, 1);
   }
-  return Lsv_NtkCecFraig(pNtk1, pNtk2, nSimIter) ? (retValue += 2) : retValue;
+  return Lsv_NtkCecFraig(pNtk1, pNtk2, nSimIter) ? (retValue + 2) : retValue;
+  // 0: not 1sub; 1: f merge by g; 2: f merge by not g; 3: f merge by both
 }
 
 int Lsv_NtkSimVerifyPattern(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int* pModel) {
