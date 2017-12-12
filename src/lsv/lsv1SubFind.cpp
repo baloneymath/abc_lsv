@@ -48,7 +48,7 @@ extern "C" void       Abc_NtkVerifyReportError( Abc_Ntk_t * pNtk1, Abc_Ntk_t * p
 
 // lsv functions
 void  Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk);
-int   Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nSimIter); 
+int   Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int fId, int gId, int nSimIter); 
 int   Lsv_NtkSimVerifyPattern(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int* pModel);
 int   Lsv_NtkCecFraig(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter);
 int   Lsv_NtkCecFraigPartAuto(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int nSimIter);
@@ -176,18 +176,18 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
 }
 
-int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int pObj_fId, int pObj_gId, int nSimIter) {
+int Lsv_Is1Sub(Abc_Ntk_t* pNtk1, Abc_Ntk_t* pNtk2, int fId, int gId, int nSimIter) {
   // pObj_g merges pObj_f
   int retValue = 0;
   assert(Abc_NtkIsStrash(pNtk1) && Abc_NtkIsStrash(pNtk2));
   if (Lsv_NtkCecFraig(pNtk1, pNtk2, nSimIter)) retValue += 1;
   int i = 0; 
   Abc_Obj_t* pFanout = 0;
-  Abc_ObjForEachFanout(Abc_NtkObj(pNtk1, pObj_fId), pFanout, i) {
+  Abc_ObjForEachFanout(Abc_NtkObj(pNtk1, fId), pFanout, i) {
     if (Abc_ObjId(pFanout) >= Abc_NtkObjNum(pNtk2)) continue;
     Abc_Obj_t* pTmp = Abc_NtkObj(pNtk2, Abc_ObjId(pFanout));
-    if (pTmp == NULL) continue;
-    if (Abc_ObjFaninId0(pFanout) == pObj_fId) Abc_ObjXorFaninC(pTmp, 0);
+    assert (pTmp != 0);
+    if (Abc_ObjFaninId0(pFanout) == fId) Abc_ObjXorFaninC(pTmp, 0);
     else Abc_ObjXorFaninC(pTmp, 1);
   }
   return Lsv_NtkCecFraig(pNtk1, pNtk2, nSimIter) ? (retValue += 2) : retValue;
