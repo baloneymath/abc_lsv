@@ -71,26 +71,26 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   Vec_Ptr_t* vTable2 = Vec_PtrStart(0);
   Abc_AigForEachAnd(pNtk, pObj_f, i) {
     Vec_Ptr_t* vNodes = Vec_PtrStart(0);
-    Vec_Int_t* vComps = Vec_IntStart(0);
+    Vec_Bit_t* vComps = Vec_BitStart(0);
     Abc_NtkForEachPi(pNtk, pObj_g, j) {
       if (Lsv_Is1Sub(pNtk, pObj_f, pObj_g, 0, SIM_ITERS)) {
         Vec_PtrPush(vNodes, pObj_g);
-        Vec_IntPush(vComps, 0);
+        Vec_BitPush(vComps, 0);
       }
       if (Lsv_Is1Sub(pNtk, pObj_f, pObj_g, 1, SIM_ITERS)) {
         Vec_PtrPush(vNodes, pObj_g);
-        Vec_IntPush(vComps, 1);
+        Vec_BitPush(vComps, 1);
       }
     }
     Abc_AigForEachAnd(pNtk, pObj_g, j) {
       if (pObj_f == pObj_g) continue;
       if (Lsv_Is1Sub(pNtk, pObj_f, pObj_g, 0, SIM_ITERS)) {
         Vec_PtrPush(vNodes, pObj_g);
-        Vec_IntPush(vComps, 0);
+        Vec_BitPush(vComps, 0);
       }
       if (Lsv_Is1Sub(pNtk, pObj_f, pObj_g, 1, SIM_ITERS)) {
         Vec_PtrPush(vNodes, pObj_g);
-        Vec_IntPush(vComps, 1);
+        Vec_BitPush(vComps, 1);
       }
     }
     if (Vec_PtrSize(vNodes)) {
@@ -114,7 +114,7 @@ int Lsv_Is1Sub(Abc_Ntk_t* pNtk, Abc_Obj_t* pObj_f, Abc_Obj_t* pObj_g, int fCompl
   Abc_Obj_t* pFanout = 0;
   Abc_Ntk_t* pNtk_dup = Abc_NtkDup(pNtk);
   if (fCompl) {
-    int i;
+    int i = 0;
     Abc_Obj_t* pObj_f_dup = (Abc_Obj_t*)pObj_f->pCopy;
     Abc_ObjForEachFanout(pObj_f_dup, pFanout, i) {
       Abc_ObjXorFaninC(pFanout, Abc_ObjFanoutFaninNum(pFanout, pObj_f_dup));
@@ -266,7 +266,8 @@ void Lsv_Ntk1SubDump(Vec_Ptr_t* vTable, Vec_Ptr_t* vTable2, Abc_VerbLevel level)
   Vec_PtrForEachEntry(Vec_Ptr_t*, vTable, vNodes, i) {
     Abc_Print(level, "%s:", Abc_ObjName((Abc_Obj_t*)Vec_PtrEntryLast(vNodes)));
     Vec_PtrForEachEntryStop(Abc_Obj_t*, vNodes, pEntry, j, Vec_PtrSize(vNodes) - 1) {
-      if (Vec_IntEntry((Vec_Int_t*)Vec_PtrEntry(vTable2, i), j)) Abc_Print(level, " -%s", Abc_ObjName(pEntry));
+      if (Vec_BitEntry((Vec_Bit_t*)Vec_PtrEntry(vTable2, i), j))
+        Abc_Print(level, " -%s", Abc_ObjName(pEntry));
       else Abc_Print(level, "  %s", Abc_ObjName(pEntry));
     }
     Abc_Print(level, "\n");
@@ -283,7 +284,8 @@ void Lsv_Ntk1SubDumpFile(Vec_Ptr_t* vTable, Vec_Ptr_t* vTable2, char* filename) 
   Vec_PtrForEachEntry(Vec_Ptr_t*, vTable, vNodes, i) {
     fprintf(fp, "%s:", Abc_ObjName((Abc_Obj_t*)Vec_PtrEntryLast(vNodes)));
     Vec_PtrForEachEntryStop(Abc_Obj_t*, vNodes, pEntry, j, Vec_PtrSize(vNodes) - 1) {
-      if (Vec_IntEntry((Vec_Int_t*)Vec_PtrEntry(vTable2, i), j)) fprintf(fp, " -%s", Abc_ObjName(pEntry));
+      if (Vec_BitEntry((Vec_Bit_t*)Vec_PtrEntry(vTable2, i), j))
+        fprintf(fp, " -%s", Abc_ObjName(pEntry));
       else fprintf(fp, "  %s", Abc_ObjName(pEntry));
     }
     fprintf(fp, " \n");
