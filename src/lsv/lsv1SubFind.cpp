@@ -128,12 +128,12 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
         Abc_Ntk_t* pNtk_dup_strash = Abc_NtkStrash(pNtk_dup, 0, 0, 0);
         int retValue = Lsv_Is1Sub(pNtk, pNtk_dup_strash, fId, gId, 2 * Abc_NtkObjNum(pNtk));
         switch (retValue) {
-        case 0: break;
-        case 1: Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 0); break;
-        case 2: Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 1); break;
-        case 3: Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 0); Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 1); break;
-        default: assert(0);
-      }
+          case 0: break;
+          case 1: Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 0); break;
+          case 2: Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 1); break;
+          case 3: Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 0); Vec_PtrPush(vNodes, pObj_g); Vec_IntPush(vComps, 1); break;
+          default: assert(0);
+        }
         Abc_NtkDelete(pNtk_dup_strash);
       }
       // recover
