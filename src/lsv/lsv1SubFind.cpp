@@ -101,10 +101,10 @@ void Lsv_Ntk1SubFind(Abc_Ntk_t* pNtk) {
   }
   
   // print result
-  char* filename = Abc_NtkName(pNtk);
-  strcat(filename, ".log");
   Lsv_Ntk1SubDump(vTable, vTable2, ABC_STANDARD);
-  Lsv_Ntk1SubDumpFile(vTable, vTable2, filename);
+  // char* filename = Abc_NtkName(pNtk);
+  // strcat(filename, ".log");
+  // Lsv_Ntk1SubDumpFile(vTable, vTable2, filename);
   Vec_PtrFreeFree(vTable);
   Vec_PtrFreeFree(vTable2);
   Abc_PrintTime(ABC_STANDARD, "Time", Abc_Clock() - clk);
