@@ -1,0 +1,24 @@
+##########################################
+#                                        #
+# PA2 - Algorithms                       #
+#                                        #
+# Author: [Hao Chen]                     #
+##########################################
+
+Notations:
+  - f : the merged node
+  - g : the node which merges f
+  - N : original network
+  - N': duplicated network
+
+  To find all the 1-sub pairs, first we iterate through all the Aig nodes and
+check each PI and other Aig nodes, and replace f by g on the duplicated network,
+then we apply random simulation to both the original network and the duplicated
+one, and check if all the PO values are the same. If exists a conflict, then it
+means that the two networks are not the same, which implies that g is not a 
+1sub candidate of f.
+  Second, if pass simulation, we make a Miter of the two networks, and then use
+"Fraiging + Rewriting + Sat Solver" to prove the Miter, and check if the two 
+networks are the same. If the two networks are the same, then g is a 1-sub
+candidate of f.
+
